@@ -36,12 +36,15 @@ module.exports = function(content) {
 	var publicPath = "__webpack_public_path__ + " + JSON.stringify(url);
 
 	if (config.publicPath) {
-		// support functions as publicPath to generate them dynamically
-		publicPath = JSON.stringify(
-				typeof config.publicPath === "function" 
-				 ? config.publicPath(url) 
-				 : config.publicPath + url
-		);
+		if (typeof config.publicPath === "string") {
+			publicPath = JSON.stringify(loaderUtils.interpolateName(this, query.publicPath, {
+				context: config.context || this.options.context,
+				content: content,
+				regExp: config.regExp
+			}));
+		} else if (typeof config.publicPath === "function") {
+			publicPath = JSON.stringify(config.publicPath(url))
+		}
 	}
 
 	if (query.emitFile === undefined || query.emitFile) {
@@ -49,5 +52,6 @@ module.exports = function(content) {
 	}
 
 	return "module.exports = " + publicPath + ";";
-}
+};
+
 module.exports.raw = true;
